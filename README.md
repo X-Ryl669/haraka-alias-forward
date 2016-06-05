@@ -26,7 +26,7 @@ Example:
     "discard_income_mail" : true,
     "alias": {
         "example.com": [
-            // Any email to 
+            // Email sent to any address starts with test under example.com will be forwarded to test@foo.com and QA@foo.com 
             {
                 "local_name": "test.*",
                 "forward_to": [
@@ -34,6 +34,7 @@ Example:
                     "QA@foo.com"
                 ]
             },
+            // Email sent to any other email address (if not start with test, as the setting above) under example.com will be forwarded to support@foo.com
             {
                 "local_name": "*",
                 "forward_to": "support@foo.com"
@@ -65,4 +66,4 @@ It has the following properties:
 - forward_to - String or array of strings - the email address(es) where will the inbound email be forwarded to. 
 
 # Thanks
-Thanks for [Chad Smith](https://github.com/chadsmith)'s original plugin and [somanyad](https://github.com/ruandao/somanyad-emailD).
+[somanyad](https://github.com/ruandao/somanyad-emailD), a mail forward service with web UI.
