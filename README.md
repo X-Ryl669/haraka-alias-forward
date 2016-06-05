@@ -26,16 +26,16 @@ Example:
     "discard_income_mail" : true,
     "alias": {
         "example.com": [
-            // Email sent to any address starts with test under example.com will be forwarded to test@foo.com and QA@foo.com 
             {
+                "__DESCRIPTION__": " Email sent to any address starts with test under example.com will be forwarded to test@foo.com and QA@foo.com",
                 "local_name": "test.*",
                 "forward_to": [
                     "test@foo.com",
                     "QA@foo.com"
                 ]
             },
-            // Email sent to any other email address (if not start with test, as the setting above) under example.com will be forwarded to support@foo.com
             {
+                "__DESCRIPTION__": "Email sent to any other email address (if not start with test, as the setting above) under example.com will be forwarded to support@foo.com", 
                 "local_name": "*",
                 "forward_to": "support@foo.com"
             }
