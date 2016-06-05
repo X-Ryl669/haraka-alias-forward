@@ -1,0 +1,28 @@
+{
+    "accept_when_match" : true,
+    "discard_income_mail" : true,
+    "alias": {
+        "example.com": [
+            {
+                "local_name": "*",
+                "disable": false,
+                "forward_to": "contact@foo.com"
+            }
+        ],
+        "multi.example.com": [
+            {
+                "local_name": "test.*",
+                "forward_to": [
+                    "test@foo.com",
+                    "QA@foo.com"
+                ]
+            },
+            {
+                "local_name": "*",
+                "forward_to": [
+                    "support@foo.com"
+                ]
+            }
+        ]
+    }
+}
