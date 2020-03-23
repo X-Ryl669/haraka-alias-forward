@@ -1,19 +1,14 @@
 haraka-alias-forward
 ====================
 # Introduction
-This [Haraka](http://haraka.github.io/) plugin forwards emails received to addresses specified in the special aliases file. It doesn't set relay flag as the original implementation, but calls send_email method instead.
+This [Haraka](http://haraka.github.io/) plugin forwards emails received to addresses specified in the special aliases file. It sets relay flag so that the email could be later processed by other filters down the chain.
 
-It doesn't change the behaviour of incoming email by default, so it can be used in conjunction with other plugins. If no other rcpt_to plugins runs after this to accept the email, it will be rejected. 
+It doesn't change the behaviour of incoming email by default, so it can be used in conjunction with other plugins. If no other rcpt_to plugins runs after this to accept the email and it's not forwarded, it will be rejected. 
 
-However, if you want to setup a forward only mail server and not trying to deliver the incoming email, do the following:
-   
-1. set `accept_when_match `and `discard_income_mail` to true.
-2. Enable `queue/discard` plugin. 
-
-Alternatively, you can use the provided `queue/skip` plugin and *discard_income_mail* flag is not needed
+It also adds SRS modification for the envelope so that you can DKIM sign your emails and not be classified as spam later on.
 
 # Compatibility  
-Tested with Haraka 2.8.4 and NodeJs 4.4.5
+Tested with Haraka 2.8.23 and NodeJs 10.15.0
 
 # Use
 Put the plugins under *Haraka/plugins* directory and put the config file into *config* directory. If you installed Haraka globally using npm, do not put the plugin under the *plugin* folder you gave to `haraka -i <folder>`.
@@ -22,8 +17,6 @@ Put the plugins under *Haraka/plugins* directory and put the config file into *c
 Example:
 ```json
 {
-    "accept_when_match" : true,
-    "discard_income_mail" : true,
     "alias": {
         "example.com": [
             {
@@ -44,12 +37,6 @@ Example:
 }
 ```
 
-### accept_when_match
-Indicates if plugin will accept the inbound email when it found a valid entry in the alias config. 
-If set to false, you need to use other `rcpt_to` hooks/plugins to accept the email, if it's the last rcpt_to hook, a failure will be reported to sender.
-
-### discard_income_mail
-Whether should the plugin mark the incoming email as discard. If set to true, then use in conjunction with `queue/discard` plugin to discard email
 
 ### alias
 Forward configuration for hosts. It may contain multiple name - value pairs. Each **key** is the domain part of the recipient, and **value** is an array of forward rules under that domain.
@@ -67,3 +54,4 @@ It has the following properties:
 
 # Thanks
 [somanyad](https://github.com/ruandao/somanyad-emailD), a mail forward service with web UI.
+[guoyiang](https://github.com/guoyiang), for the initial plugin that was modified here
