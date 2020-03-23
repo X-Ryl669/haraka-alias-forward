@@ -6,22 +6,39 @@ var Transaction = require('./transaction');
 var logger = require('./logger');
 
 exports.register = function () {
-    this.register_hook('rcpt', 'alias_forword');
+    this.register_hook('rcpt', 'alias_forward');
+    var plugin = this;
+    try {
+        plugin.SRS = require('srs.js');
+    }
+    catch (e) {
+        plugin.logerror("failed to load srs, " +
+                        " try installing it: npm install srs.js");
+        return;
+    }
+    plugin.load_srs_ini();
+    plugin.srs = new plugin.SRS({secret: plugin.cfg.main.secret});
+
 };
 
-exports.alias_forword = function (next, connection, params) {
+exports.load_srs_ini = function() {
+  var plugin = this;
+  plugin.cfg = plugin.config.get('srs.ini', 'ini', function () {
+    plugin.load_srs_ini();
+  });
+};
+
+
+exports.alias_forward = function (next, connection, params) {
     logger.logdebug('New Email arrived, RCPT_TO: ' + connection.transaction.rcpt_to);
     var config = this.config.get('rcpt_to.alias_forward', 'json') || {};
     var rcpt = params[0];
     var forward_addresses = find_forward_addresses(config.alias, rcpt);
     if (forward_addresses) {
-        forward_message(connection.transaction, forward_addresses);
-        if(config.discard_income_mail){
-            connection.transaction.notes.discard = true;
-        }
-        if(config.accept_when_match){
-            return next(OK);
-        }
+        forward_message(connection.transaction, forward_addresses, this);
+        // Tell later plugins that this transaction is now an alias
+        connection.transaction.notes.forward = true;
+        connection.relaying = true;
     }
     return next();
 };
@@ -64,23 +81,27 @@ function local_part_match(local_config, local_part){
     return match;
 };
 
-function forward_message (originalTransaction, recipients) {
+function forward_message (originalTransaction, recipients, plugin) {
     var send_transaction = Transaction.createTransaction();
     Object.assign(send_transaction, originalTransaction);
     send_transaction.rcpt_to = [];
     convert_to_array_if_not(recipients).forEach(function (recipient) {
         send_transaction.rcpt_to.push(new Address('<' + recipient + '>'));
     });
-    outbound.send_email(send_transaction, function(retval, msg) {
-        switch(retval) {
-            case constants.ok:
-                logger.logdebug('Successful forwarded, original: ' + originalTransaction.rcpt_to.original + ', to: ' + recipients);
-                break;
-            case constants.deny:
-            default:
-                logger.logwarn('Failed to forward, original: ' + originalTransaction.rcpt_to.original + ', to: ' + recipients + '. Status: ' + retval + '. Message: ' + msg);
-        }
-    });
+    var original_recipient = originalTransaction.rcpt_to[0];
+    // Perform SRS too
+    var sender = send_transaction.mail_from;
+    var srsReverseValue = null;
+
+    var beforeSrsRewriteFrom = sender;
+    var afterSrsRewriteFrom = new Address(plugin.srs.rewrite(sender.user, sender.host), plugin.cfg.main.sender_domain);
+
+    send_transaction.mail_from = afterSrsRewriteFrom;
+
+    logger.loginfo(plugin, 'beforeSrsRewriteFrom=' + beforeSrsRewriteFrom + ', afterSrsRewriteFrom=' + afterSrsRewriteFrom + '.');
+
+    originalTransaction.rcpt_to = send_transaction.rcpt_to;
+    originalTransaction.mail_from = send_transaction.mail_from;
 };
 
 function convert_to_array_if_not(obj){

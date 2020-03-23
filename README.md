@@ -14,6 +14,8 @@ Tested with Haraka 2.8.23 and NodeJs 10.15.0
 Put the plugins under *Haraka/plugins* directory and put the config file into *config* directory. If you installed Haraka globally using npm, do not put the plugin under the *plugin* folder you gave to `haraka -i <folder>`.
 
 # Config
+
+Save a file called "rcpt_to.alias_forward" in your Haraka's config folder with this content:
 Example:
 ```json
 {
@@ -36,6 +38,14 @@ Example:
     }
 }
 ```
+
+If you want to use SRS (required for not being rejected as SPAM), save a file called "srs.ini" in your's Haraka's config folder with this content:
+Example:
+```
+[main]
+secret=ChangeThisWithWhateverYouInvented
+sender_domain=yourdomain.me
+``` 
 
 
 ### alias

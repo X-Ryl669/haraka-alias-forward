@@ -1,6 +1,4 @@
 {
-    "accept_when_match" : true,
-    "discard_income_mail" : true,
     "alias": {
         "example.com": [
             {
